@@ -1,11 +1,8 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32922.545
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayPauseRemocon", "PlayPauseRemocon.csproj", "{C75C8BA4-B95D-4335-B0F7-D7FFBD8C80C8}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iptb", "iptb\iptb.csproj", "{23499890-263E-46D1-A44D-EE7A48B65116}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iptb", "iptb.csproj", "{23499890-263E-46D1-A44D-EE7A48B65116}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,10 +10,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C75C8BA4-B95D-4335-B0F7-D7FFBD8C80C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C75C8BA4-B95D-4335-B0F7-D7FFBD8C80C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C75C8BA4-B95D-4335-B0F7-D7FFBD8C80C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C75C8BA4-B95D-4335-B0F7-D7FFBD8C80C8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{23499890-263E-46D1-A44D-EE7A48B65116}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{23499890-263E-46D1-A44D-EE7A48B65116}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{23499890-263E-46D1-A44D-EE7A48B65116}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -26,6 +19,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {2595AF59-3D68-48DF-BA35-3255451565D0}
+		SolutionGuid = {5AE17CA5-CF6A-48DB-BF00-6B60970799BD}
 	EndGlobalSection
 EndGlobal
