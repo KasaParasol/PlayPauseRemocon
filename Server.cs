@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Text;
 using System.Diagnostics;
 using WindowsInput;
+using System.Text.RegularExpressions;
 
 namespace PlayPauseRemocon
 {
@@ -20,12 +21,55 @@ namespace PlayPauseRemocon
                 shutdownSignal = false;
                 string url = "http://+:" + port.ToString() + "/";
 
-                Process proc = new Process();
-                proc.StartInfo.FileName = "netsh";
-                proc.StartInfo.Arguments = "http add urlacl url=" + url + " user=Everyone";
-                proc.StartInfo.Verb = "runas";
-                proc.Start();
-                proc.WaitForExit();
+                Process procShow = new Process();
+                procShow.StartInfo.RedirectStandardOutput = true;
+                procShow.StartInfo.CreateNoWindow = true;
+                procShow.StartInfo.UseShellExecute = false;
+                procShow.StartInfo.FileName = "netsh";
+                procShow.StartInfo.Arguments = "http show urlacl url=" + url;
+                procShow.StartInfo.Verb = "runas";
+                procShow.Start();
+                procShow.WaitForExit();
+                string netshResult = procShow.StandardOutput.ReadToEnd();
+                if (!netshResult.Contains(url))
+                {
+                    Process proc = new Process();
+                    proc.StartInfo.FileName = "netsh";
+                    proc.StartInfo.Arguments = "http add urlacl url=" + url + " user=Everyone";
+                    proc.StartInfo.Verb = "runas";
+                    proc.Start();
+                    proc.WaitForExit();
+                }
+
+                Process procFWShow = new Process();
+                procFWShow.StartInfo.RedirectStandardOutput = true;
+                procFWShow.StartInfo.CreateNoWindow = true;
+                procFWShow.StartInfo.UseShellExecute = false;
+                procFWShow.StartInfo.FileName = "netsh";
+                procFWShow.StartInfo.Arguments = "advfirewall firewall show rule name=\"PlayPauseRemocon\"";
+                procFWShow.StartInfo.Verb = "runas";
+                procFWShow.Start();
+                procFWShow.WaitForExit();
+                string netshFWResult = procFWShow.StandardOutput.ReadToEnd();
+                if (!netshFWResult.Contains("PlayPauseRemocon"))
+                {
+                    Process procFW = new Process();
+                    procFW.StartInfo.FileName = "netsh";
+                    procFW.StartInfo.Arguments = "advfirewall firewall add rule name=\"PlayPauseRemocon\" dir=in action=allow";
+                    procFW.StartInfo.Verb = "runas";
+                    procFW.Start();
+                    procFW.WaitForExit();
+                }
+
+                if (!netshFWResult.Contains(port.ToString())) {
+                    Process procPort = new Process();
+                    procPort.StartInfo.FileName = "netsh";
+                    procPort.StartInfo.Arguments = "advfirewall firewall set rule name=\"PlayPauseRemocon\" new program=system profile=private protocol=tcp localport=" + port.ToString();
+                    procPort.StartInfo.Verb = "runas";
+                    procPort.Start();
+                    procPort.WaitForExit();
+                }
+                
 
                 sv = new HttpListener();
                 sv.Prefixes.Add(url);

@@ -172,6 +172,9 @@ namespace PlayPauseRemocon
             }
             else
             {
+                Text = "Connect To...";
+                mode = 1;
+                ipTextBox1.Enabled = true;
                 label3.Text = "Not connected.";
                 Show();
                 Activate();
