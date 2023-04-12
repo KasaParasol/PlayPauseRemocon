@@ -4,15 +4,50 @@ using System.Text;
 using System.Diagnostics;
 using WindowsInput;
 using System.Text.RegularExpressions;
+using System;
+using System.Runtime.InteropServices;
 
 namespace PlayPauseRemocon
 {
     internal class Server
     {
+        //送信するためのメソッド(数値)
+        [DllImport("user32.dll")]
+        private static extern int SendMessage(IntPtr hwnd, uint message, int wParam, int lParam);
+
+        private const uint WM_APPCOMMAND = 0x0319;
+
+        private const int APPCOMMAND_MEDIA_PLAY_PAUSE    = 0x000E0000;
+        private const int APPCOMMAND_MEDIA_PLAY          = 0x002E0000;
+        private const int APPCOMMAND_MEDIA_PAUSE         = 0x002F0000;
+        private const int APPCOMMAND_MEDIA_STOP          = 0x000D0000;
+        private const int APPCOMMAND_VOLUME_MUTE         = 0x00080000;
+        private const int APPCOMMAND_VOLUME_UP           = 0x000A0000;
+        private const int APPCOMMAND_VOLUME_DOWN         = 0x00090000;
+        private const int APPCOMMAND_MEDIA_NEXTTRACK     = 0x000B0000;
+        private const int APPCOMMAND_MEDIA_PREVIOUSTRACK = 0x000C0000;
+
         public bool shutdownSignal = false;
         public HttpListener sv = null;
         public Task task;
         private InputSimulator sim = new InputSimulator();
+        private string[][] regExps;
+        private bool useHWid;
+
+        public Server(string[] strs)
+        {
+            useHWid = strs.Length != 0;
+
+            if (useHWid)
+            {
+
+                regExps = new string[strs.Length][];
+                for(int i = 0; i < strs.Length; i++)
+                {
+                    regExps[i] = strs[i].Split('\t');
+                }
+            }
+        }
 
         public bool Start(int port)
         {
@@ -88,7 +123,12 @@ namespace PlayPauseRemocon
                                 if (req != null && req.RawUrl.IndexOf("playpause") != -1)
                                 {
                                     // TODO: ここに処理
-                                    sim.Keyboard.KeyPress(WindowsInput.Native.VirtualKeyCode.MEDIA_PLAY_PAUSE);
+                                    if (!useHWid)
+                                    {
+                                        sim.Keyboard.KeyPress(WindowsInput.Native.VirtualKeyCode.MEDIA_PLAY_PAUSE);
+
+                                    }
+                                    else messaging();
                                     byte[] text = Encoding.UTF8.GetBytes("<html><head><meta charset='utf-8'/></head><body>OK</body></html>");
                                     res.OutputStream.Write(text, 0, text.Length);
                                 }
@@ -116,6 +156,52 @@ namespace PlayPauseRemocon
             catch
             {
                 return false;
+            }
+        }
+
+        private void messaging() {
+            foreach (string[] reg in regExps)
+            {
+                foreach (System.Diagnostics.Process p in System.Diagnostics.Process.GetProcesses())
+                {
+                    //メインウィンドウのタイトルがある時だけ列挙する
+                    if (p.MainWindowTitle.Length != 0)
+                    {
+                        if (reg.Length >= 2 && reg[1] == "exe")
+                        {
+                            if (!Regex.IsMatch(p.ProcessName, reg[0]))
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            if (!Regex.IsMatch(p.MainWindowTitle, reg[0]))
+                            {
+                                continue;
+                            }
+                        }
+
+                        IntPtr hWind = p.MainWindowHandle;
+
+                        if (reg.Length >= 3) switch (reg[2])
+                        {
+                                case "handle":
+                                    {
+                                        hWind = p.Handle;
+                                        break;
+                                    }
+                                default:
+                                    {
+                                        hWind = p.MainWindowHandle;
+                                        break;
+                                    }
+                        }
+
+                        SendMessage(p.MainWindowHandle, WM_APPCOMMAND, 0, APPCOMMAND_MEDIA_PLAY_PAUSE);
+                        return;
+                    }
+                }
             }
         }
 

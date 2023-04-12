@@ -22,23 +22,41 @@ namespace PlayPauseRemocon
         private int mode = 0;
         private string serverUrl = "";
 
-        private Server server = new Server();
+        private Server server = null;
+        private string[] regexps;
 
         public Form1()
         {
-            InitializeComponent();
+            string[] ar = null;
 
             try
             {
                 string read = File.ReadAllText("url.txt");
-                string[] ar = read.Split(':');
-                ipTextBox1.Text = ar[0];
-                port.Value = int.Parse(ar[1]);
-                mode = 1;
-                button1_Click(null, null);
+                Console.WriteLine(read);
+                string[] arr = read.Replace("\r", "").Split('\n');
+                ar = arr[0].Split(':');
+                var list = new List<string>(arr);
+                list.RemoveAt(0);
+                regexps = list.ToArray();
+                server = new Server(regexps);
 
             }
             catch { 
+            }
+
+            InitializeComponent();
+
+            try {
+                if (ar != null && ar.Length == 2)
+                {
+                    ipTextBox1.Text = ar[0];
+                    port.Value = int.Parse(ar[1]);
+                    mode = 1;
+                    button1_Click(null, null);
+                }
+            }
+            catch
+            {
             }
         }
 
@@ -135,7 +153,10 @@ namespace PlayPauseRemocon
                     connect.Text = "Disconnect (" + ipTextBox1.Text + ":" + port.Value.ToString() + ")";
                     try
                     {
-                        File.WriteAllText(@".\url.txt", ipTextBox1.Text + ":" + port.Value.ToString());
+                        List<string> list = new List<string>();
+                        list.Add(ipTextBox1.Text + ":" + port.Value.ToString());
+                        list.AddRange(regexps);
+                        File.WriteAllText(@".\url.txt", string.Join("\r\n", list));
                     }
                     catch {
                         MessageBox.Show("設定ファイルの保存に失敗しました。", "エラー", MessageBoxButtons.OK);
