@@ -23,7 +23,8 @@ namespace PlayPauseRemocon
         private string serverUrl = "";
 
         private Server server = null;
-        private string[] regexps;
+        private string[] regexps = { };
+        private bool autoStart = false;
 
         public Form1()
         {
@@ -32,25 +33,30 @@ namespace PlayPauseRemocon
             try
             {
                 string read = File.ReadAllText("url.txt");
-                Console.WriteLine(read);
                 string[] arr = read.Replace("\r", "").Split('\n');
                 ar = arr[0].Split(':');
                 var list = new List<string>(arr);
                 list.RemoveAt(0);
                 regexps = list.ToArray();
-                server = new Server(regexps);
 
             }
             catch { 
             }
 
+            server = new Server(regexps);
             InitializeComponent();
 
             try {
-                if (ar != null && ar.Length == 2)
+                if (ar != null && ar.Length >= 2)
                 {
                     ipTextBox1.Text = ar[0];
                     port.Value = int.Parse(ar[1]);
+                    Console.WriteLine(ar[2]);
+                    if (ar.Length == 3 && ar[2] == "self") {
+                        mode = 2;
+                        autoStart = true;
+                        button1_Click(null, null);
+                    }
                     mode = 1;
                     button1_Click(null, null);
                 }
@@ -154,7 +160,7 @@ namespace PlayPauseRemocon
                     try
                     {
                         List<string> list = new List<string>();
-                        list.Add(ipTextBox1.Text + ":" + port.Value.ToString());
+                        list.Add(ipTextBox1.Text + ":" + port.Value.ToString() + ":" + (autoStart? "self": "none"));
                         list.AddRange(regexps);
                         File.WriteAllText(@".\url.txt", string.Join("\r\n", list));
                     }
